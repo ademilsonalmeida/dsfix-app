@@ -1,7 +1,7 @@
 import CredentialsProvider from "next-auth/providers/credentials";
+import { verifyAdminCredentials } from "./actions/auth";
 
-// NextAuth.js configuration
-// This will be fully implemented in Task 3 with database integration
+// NextAuth.js configuration with database integration
 export const authOptions = {
   providers: [
     CredentialsProvider({
@@ -11,14 +11,25 @@ export const authOptions = {
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        // TODO: Implement actual authentication in Task 3
-        // This is a placeholder that will be replaced with database lookup
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        // Placeholder - will be replaced with actual DB query
-        return null;
+        // Verify credentials against database
+        const user = await verifyAdminCredentials(
+          credentials.email as string,
+          credentials.password as string
+        );
+
+        if (!user) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.nome,
+        };
       },
     }),
   ],
@@ -34,6 +45,7 @@ export const authOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.name = user.name;
       }
       return token;
     },
@@ -42,6 +54,7 @@ export const authOptions = {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
+        session.user.name = token.name as string;
       }
       return session;
     },
