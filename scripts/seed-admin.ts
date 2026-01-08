@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { createAdminUser } from "../src/lib/actions/auth";
 
 async function seedAdmin() {

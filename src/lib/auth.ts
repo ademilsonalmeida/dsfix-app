@@ -1,8 +1,9 @@
+import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { verifyAdminCredentials } from "./actions/auth";
 
 // NextAuth.js configuration with database integration
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
