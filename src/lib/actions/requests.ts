@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { solicitacoes, historicoStatus } from "@/lib/db/schema";
 import { createRequestSchema } from "@/lib/validations/request";
+import { eq } from "drizzle-orm";
 
 function generateRequestNumber(): string {
   const timestamp = Date.now().toString(36).toUpperCase();
@@ -50,5 +51,25 @@ export async function createRequest(data: unknown) {
       return { success: false, error: error.message };
     }
     return { success: false, error: "Erro ao criar solicitação" };
+  }
+}
+
+export async function getRequestById(id: string) {
+  try {
+    const request = await db.query.solicitacoes.findFirst({
+      where: eq(solicitacoes.id, id),
+      with: {
+        equipamento: true,
+      },
+    });
+
+    if (!request) {
+      return { success: false, error: "Solicitação não encontrada" };
+    }
+
+    return { success: true, data: request };
+  } catch (error) {
+    console.error("Error fetching request:", error);
+    return { success: false, error: "Erro ao buscar solicitação" };
   }
 }
