@@ -1,40 +1,54 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { QRScanner } from "@/components/scanner/qr-scanner";
 
 export default function HomePage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-gray-900">
-            Sistema de Manutenção
-          </h1>
-          <p className="text-xl text-gray-600">
-            Solicite manutenção de equipamentos de forma rápida e fácil
-          </p>
-        </div>
+  const [showScanner, setShowScanner] = useState(false);
 
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-white p-8 rounded-lg shadow-lg">
-            <div className="text-center mb-6">
-              <div className="text-6xl mb-4">📱</div>
-              <h2 className="text-2xl font-semibold mb-2">Escaneie o QR Code</h2>
-              <p className="text-gray-600">
-                Use a câmera do seu celular para escanear o QR Code colado no equipamento
-              </p>
-            </div>
-            <div className="bg-blue-50 p-4 rounded text-sm text-gray-700">
-              <p className="font-semibold mb-2">Como fazer:</p>
-              <ol className="list-decimal list-inside space-y-1">
-                <li>Abra a câmera do celular</li>
-                <li>Aponte para o QR Code do equipamento</li>
-                <li>Toque na notificação que aparecer</li>
-                <li>Preencha o formulário</li>
-              </ol>
-            </div>
+  return (
+    <>
+      {showScanner && <QRScanner onClose={() => setShowScanner(false)} />}
+
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+        <div className="max-w-4xl mx-auto px-4 py-16">
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold mb-4 text-gray-900">
+              Sistema de Manutenção
+            </h1>
+            <p className="text-xl text-gray-600">
+              Solicite manutenção de equipamentos de forma rápida e fácil
+            </p>
           </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white p-8 rounded-lg shadow-lg">
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4">📱</div>
+                <h2 className="text-2xl font-semibold mb-2">Escaneie o QR Code</h2>
+                <p className="text-gray-600 mb-4">
+                  Use a câmera do dispositivo para escanear o QR Code do equipamento
+                </p>
+              </div>
+              <Button
+                className="w-full mb-4"
+                size="lg"
+                onClick={() => setShowScanner(true)}
+              >
+                📷 Abrir Scanner
+              </Button>
+              <div className="bg-blue-50 p-4 rounded text-sm text-gray-700">
+                <p className="font-semibold mb-2">Como usar:</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Clique em &quot;Abrir Scanner&quot;</li>
+                  <li>Permita o acesso à câmera</li>
+                  <li>Aponte para o QR Code do equipamento</li>
+                  <li>A detecção é automática</li>
+                </ol>
+              </div>
+            </div>
 
           <div className="bg-white p-8 rounded-lg shadow-lg">
             <div className="text-center mb-6">
@@ -50,7 +64,7 @@ export default function HomePage() {
               </Button>
             </Link>
           </div>
-        </div>
+          </div>
 
         <div className="bg-white p-8 rounded-lg shadow">
           <h3 className="text-xl font-semibold mb-4 text-center">
@@ -89,7 +103,8 @@ export default function HomePage() {
             </Link>
           </p>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
