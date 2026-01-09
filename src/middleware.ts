@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const session = await auth();
 
   const { pathname } = request.nextUrl;
 
   // Allow access to login page
   if (pathname === "/admin/login") {
     // If already authenticated, redirect to admin dashboard
-    if (token) {
+    if (session) {
       return NextResponse.redirect(new URL("/admin", request.url));
     }
     return NextResponse.next();
@@ -21,7 +18,7 @@ export async function middleware(request: NextRequest) {
 
   // Protect all /admin/* routes (except /admin/login)
   if (pathname.startsWith("/admin")) {
-    if (!token) {
+    if (!session) {
       const loginUrl = new URL("/admin/login", request.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
@@ -33,4 +30,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ["/admin/:path*"],
+  runtime: "nodejs",
 };

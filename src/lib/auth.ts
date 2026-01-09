@@ -1,9 +1,9 @@
-import type { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { verifyAdminCredentials } from "./actions/auth";
 
-// NextAuth.js configuration with database integration
-export const authOptions: NextAuthOptions = {
+// NextAuth.js v5 configuration
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -35,7 +35,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   session: {
-    strategy: "jwt" as const,
+    strategy: "jwt",
   },
   pages: {
     signIn: "/admin/login",
@@ -60,4 +60,4 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-};
+});
