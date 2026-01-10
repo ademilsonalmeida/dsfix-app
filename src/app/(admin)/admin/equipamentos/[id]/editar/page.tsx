@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EquipmentForm } from "@/components/forms/equipment-form";
 import { getEquipamentoById } from "@/lib/actions/equipamentos";
+import { toast } from "sonner";
 
 interface PageProps {
   params: {
@@ -31,11 +32,11 @@ export default function EditarEquipamentoPage({ params }: PageProps) {
       if (result.success && result.data) {
         setEquipamento(result.data as Equipamento);
       } else {
-        alert("Equipamento não encontrado");
+        toast.error("Equipamento não encontrado");
       }
     } catch (error) {
       console.error("Error loading equipamento:", error);
-      alert("Erro ao carregar equipamento");
+      toast.error("Erro ao carregar equipamento");
     } finally {
       setIsLoading(false);
     }

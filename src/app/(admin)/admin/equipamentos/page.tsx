@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { listAllEquipamentos, deactivateEquipamento } from "@/lib/actions/equipamentos";
+import { toast } from "sonner";
 
 interface Equipment {
   id: string;
@@ -69,14 +70,14 @@ export default function EquipamentosPage() {
     try {
       const result = await deactivateEquipamento(id);
       if (result.success) {
-        alert("Equipamento desativado com sucesso!");
-        loadEquipamentos();
+        toast.success("Equipamento desativado com sucesso!");
+        await loadEquipamentos(); // Reload the list to reflect changes
       } else {
-        alert("Erro ao desativar: " + result.error);
+        toast.error("Erro ao desativar: " + result.error);
       }
     } catch (error) {
       console.error("Error deactivating:", error);
-      alert("Erro ao desativar equipamento");
+      toast.error("Erro ao desativar equipamento");
     }
   };
 
