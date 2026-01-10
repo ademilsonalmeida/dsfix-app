@@ -10,16 +10,22 @@ interface QRScannerProps {
 }
 
 export function QRScanner({ onClose }: QRScannerProps) {
-  const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const router = useRouter();
 
   const handleQRCodeDetected = async (decodedText: string) => {
     try {
-      // Stop scanner
+      // Stop scanner if it's running
       if (scannerRef.current) {
-        await scannerRef.current.stop();
+        try {
+          const state = await scannerRef.current.getState();
+          if (state === 2) { // 2 = SCANNING state
+            await scannerRef.current.stop();
+          }
+        } catch {
+          // Scanner might already be stopped, continue anyway
+        }
       }
 
       // Check if it's a URL or just a code
@@ -55,7 +61,6 @@ export function QRScanner({ onClose }: QRScannerProps) {
           return;
         }
 
-        setIsScanning(true);
         setError(null);
 
         // Clear any existing scanner instance
@@ -90,16 +95,12 @@ export function QRScanner({ onClose }: QRScannerProps) {
           }
         );
 
-        if (isMounted) {
-          setIsScanning(true);
-        }
       } catch (err) {
         console.error("Error starting scanner:", err);
         if (isMounted) {
           setError(
             "Não foi possível acessar a câmera. Verifique as permissões."
           );
-          setIsScanning(false);
         }
       }
     };
@@ -116,13 +117,24 @@ export function QRScanner({ onClose }: QRScannerProps) {
       // Cleanup scanner on unmount
       if (scannerRef.current) {
         scannerRef.current
-          .stop()
-          .then(() => {
-            scannerRef.current?.clear();
-            scannerRef.current = null;
+          .getState()
+          .then((state) => {
+            if (state === 2 && scannerRef.current) {
+              // Only stop if scanner is running
+              return scannerRef.current.stop();
+            }
           })
-          .catch((err) => {
-            console.error("Error stopping scanner:", err);
+          .then(() => {
+            if (scannerRef.current) {
+              scannerRef.current.clear();
+              scannerRef.current = null;
+            }
+          })
+          .catch(() => {
+            // Silently ignore errors during cleanup
+            if (scannerRef.current) {
+              scannerRef.current = null;
+            }
           });
       }
     };
@@ -130,11 +142,16 @@ export function QRScanner({ onClose }: QRScannerProps) {
   }, []);
 
   const handleClose = async () => {
-    if (scannerRef.current && isScanning) {
+    if (scannerRef.current) {
       try {
-        await scannerRef.current.stop();
+        // Check if scanner is running before attempting to stop
+        const state = await scannerRef.current.getState();
+        if (state === 2) { // 2 = SCANNING state in html5-qrcode
+          await scannerRef.current.stop();
+        }
       } catch (err) {
-        console.error("Error stopping scanner:", err);
+        // Silently ignore errors when stopping scanner
+        console.log("Scanner already stopped or not running");
       }
     }
     onClose();
