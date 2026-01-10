@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createEquipamento, updateEquipamento } from "@/lib/actions/equipamentos";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface EquipmentFormProps {
   equipamento?: {
@@ -48,15 +49,15 @@ export function EquipmentForm({ equipamento, mode }: EquipmentFormProps) {
       }
 
       if (result.success) {
-        alert(mode === "create" ? "Equipamento criado com sucesso!" : "Equipamento atualizado com sucesso!");
+        toast.success(mode === "create" ? "Equipamento criado com sucesso!" : "Equipamento atualizado com sucesso!");
         router.push("/admin/equipamentos");
         router.refresh();
       } else {
-        alert("Erro: " + result.error);
+        toast.error("Erro: " + result.error);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("Erro ao salvar equipamento");
+      toast.error("Erro ao salvar equipamento");
     } finally {
       setIsSubmitting(false);
     }

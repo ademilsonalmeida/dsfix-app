@@ -6,6 +6,7 @@ import { QRCodeDisplay } from "@/components/admin/qrcode-display";
 import { getEquipamentoById } from "@/lib/actions/equipamentos";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface PageProps {
   params: {
@@ -33,11 +34,11 @@ export default function QRCodePage({ params }: PageProps) {
       if (result.success && result.data) {
         setEquipamento(result.data as Equipamento);
       } else {
-        alert("Equipamento não encontrado");
+        toast.error("Equipamento não encontrado");
       }
     } catch (error) {
       console.error("Error loading equipamento:", error);
-      alert("Erro ao carregar equipamento");
+      toast.error("Erro ao carregar equipamento");
     } finally {
       setIsLoading(false);
     }
