@@ -19,7 +19,7 @@ export function QRScanner({ onClose }: QRScannerProps) {
       // Stop scanner if it's running
       if (scannerRef.current) {
         try {
-          const state = await scannerRef.current.getState();
+          const state = scannerRef.current.getState();
           if (state === 2) { // 2 = SCANNING state
             await scannerRef.current.stop();
           }
@@ -116,26 +116,25 @@ export function QRScanner({ onClose }: QRScannerProps) {
 
       // Cleanup scanner on unmount
       if (scannerRef.current) {
-        scannerRef.current
-          .getState()
-          .then((state) => {
+        const cleanup = async () => {
+          try {
+            const state = scannerRef.current?.getState();
             if (state === 2 && scannerRef.current) {
               // Only stop if scanner is running
-              return scannerRef.current.stop();
+              await scannerRef.current.stop();
             }
-          })
-          .then(() => {
             if (scannerRef.current) {
-              scannerRef.current.clear();
+              await scannerRef.current.clear();
               scannerRef.current = null;
             }
-          })
-          .catch(() => {
+          } catch {
             // Silently ignore errors during cleanup
             if (scannerRef.current) {
               scannerRef.current = null;
             }
-          });
+          }
+        };
+        cleanup();
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,11 +144,11 @@ export function QRScanner({ onClose }: QRScannerProps) {
     if (scannerRef.current) {
       try {
         // Check if scanner is running before attempting to stop
-        const state = await scannerRef.current.getState();
+        const state = scannerRef.current.getState();
         if (state === 2) { // 2 = SCANNING state in html5-qrcode
           await scannerRef.current.stop();
         }
-      } catch (err) {
+      } catch {
         // Silently ignore errors when stopping scanner
         console.log("Scanner already stopped or not running");
       }
