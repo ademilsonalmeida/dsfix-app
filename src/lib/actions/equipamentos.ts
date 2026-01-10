@@ -3,6 +3,12 @@
 import { db } from "@/lib/db";
 import { equipamentos } from "@/lib/db/schema";
 import { eq, or, ilike } from "drizzle-orm";
+import {
+  createEquipmentSchema,
+  updateEquipmentSchema,
+  type CreateEquipmentInput,
+  type UpdateEquipmentInput
+} from "@/lib/validations/equipment";
 
 export async function searchEquipamentos(query: string) {
   try {
@@ -86,19 +92,23 @@ export async function getEquipamentoById(id: string) {
   }
 }
 
-export interface CreateEquipamentoData {
-  codigo: string;
-  nome: string;
-  categoria: string;
-  local: string;
-  observacoes?: string;
-}
+export type CreateEquipamentoData = CreateEquipmentInput;
 
 export async function createEquipamento(data: CreateEquipamentoData) {
   try {
+    // Validate input data with Zod schema
+    const validationResult = createEquipmentSchema.safeParse(data);
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(e => e.message).join(", ");
+      return { success: false, error: errors };
+    }
+
+    const validatedData = validationResult.data;
+
     // Check if codigo already exists
     const existing = await db.query.equipamentos.findFirst({
-      where: eq(equipamentos.codigo, data.codigo),
+      where: eq(equipamentos.codigo, validatedData.codigo),
     });
 
     if (existing) {
@@ -108,11 +118,11 @@ export async function createEquipamento(data: CreateEquipamentoData) {
     const [newEquipamento] = await db
       .insert(equipamentos)
       .values({
-        codigo: data.codigo,
-        nome: data.nome,
-        categoria: data.categoria,
-        local: data.local,
-        observacoes: data.observacoes || null,
+        codigo: validatedData.codigo,
+        nome: validatedData.nome,
+        categoria: validatedData.categoria,
+        local: validatedData.local,
+        observacoes: validatedData.observacoes || null,
         ativo: true,
       })
       .returning();
@@ -127,20 +137,23 @@ export async function createEquipamento(data: CreateEquipamentoData) {
   }
 }
 
-export interface UpdateEquipamentoData {
-  id: string;
-  codigo?: string;
-  nome?: string;
-  categoria?: string;
-  local?: string;
-  observacoes?: string;
-}
+export type UpdateEquipamentoData = UpdateEquipmentInput;
 
 export async function updateEquipamento(data: UpdateEquipamentoData) {
   try {
+    // Validate input data with Zod schema
+    const validationResult = updateEquipmentSchema.safeParse(data);
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(e => e.message).join(", ");
+      return { success: false, error: errors };
+    }
+
+    const validatedData = validationResult.data;
+
     // Check if equipment exists
     const existing = await db.query.equipamentos.findFirst({
-      where: eq(equipamentos.id, data.id),
+      where: eq(equipamentos.id, validatedData.id),
     });
 
     if (!existing) {
@@ -148,9 +161,9 @@ export async function updateEquipamento(data: UpdateEquipamentoData) {
     }
 
     // If codigo is being changed, check for duplicates
-    if (data.codigo && data.codigo !== existing.codigo) {
+    if (validatedData.codigo && validatedData.codigo !== existing.codigo) {
       const duplicate = await db.query.equipamentos.findFirst({
-        where: eq(equipamentos.codigo, data.codigo),
+        where: eq(equipamentos.codigo, validatedData.codigo),
       });
 
       if (duplicate) {
@@ -162,16 +175,16 @@ export async function updateEquipamento(data: UpdateEquipamentoData) {
       atualizadoEm: new Date(),
     };
 
-    if (data.codigo) updateData.codigo = data.codigo;
-    if (data.nome) updateData.nome = data.nome;
-    if (data.categoria) updateData.categoria = data.categoria;
-    if (data.local) updateData.local = data.local;
-    if (data.observacoes !== undefined) updateData.observacoes = data.observacoes || null;
+    if (validatedData.codigo) updateData.codigo = validatedData.codigo;
+    if (validatedData.nome) updateData.nome = validatedData.nome;
+    if (validatedData.categoria) updateData.categoria = validatedData.categoria;
+    if (validatedData.local) updateData.local = validatedData.local;
+    if (validatedData.observacoes !== undefined) updateData.observacoes = validatedData.observacoes || null;
 
     const [updated] = await db
       .update(equipamentos)
       .set(updateData)
-      .where(eq(equipamentos.id, data.id))
+      .where(eq(equipamentos.id, validatedData.id))
       .returning();
 
     return { success: true, data: updated };
