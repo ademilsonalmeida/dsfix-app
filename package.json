@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "tsx src/lib/db/__tests__/schema.test.ts && tsx src/lib/db/__tests__/connection.test.ts && tsx src/lib/validations/__tests__/equipment.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -35,7 +36,10 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
     "@types/bcryptjs": "^2.4.6",
+    "@types/jest": "^29.5.12",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -44,8 +48,11 @@
     "drizzle-kit": "^0.29.1",
     "eslint": "^9",
     "eslint-config-next": "^15.1.4",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.2.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.1",
+    "ts-jest": "^29.1.5",
     "tsx": "^4.21.0",
     "typescript": "5.9.3"
   }
