@@ -7,6 +7,8 @@ import { RequestFilters } from "@/components/admin/request-filters";
 import { RequestDetail } from "@/components/admin/request-detail";
 import { getRequests, getRequestDetail, getAdminUsers, type RequestFilters as Filters } from "@/lib/actions/requests";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface Request {
   id: string;
@@ -199,6 +201,23 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Quick Actions */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Link href="/admin/equipamentos">
+                <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center gap-2">
+                  <span className="text-2xl">📦</span>
+                  <span className="font-semibold">Gerenciar Equipamentos</span>
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Filters */}
         <Card className="mb-6">
