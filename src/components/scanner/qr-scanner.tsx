@@ -43,46 +43,83 @@ export function QRScanner({ onClose }: QRScannerProps) {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    const readerId = "qr-reader";
+
     const startScanner = async () => {
       try {
+        // Check if element exists
+        const element = document.getElementById(readerId);
+        if (!element) {
+          console.error("QR reader element not found");
+          return;
+        }
+
         setIsScanning(true);
         setError(null);
 
-        const scanner = new Html5Qrcode("qr-reader");
+        // Clear any existing scanner instance
+        if (scannerRef.current) {
+          try {
+            await scannerRef.current.stop();
+            await scannerRef.current.clear();
+          } catch {
+            // Ignore cleanup errors
+          }
+        }
+
+        const scanner = new Html5Qrcode(readerId);
         scannerRef.current = scanner;
+
+        const config = {
+          fps: 10, // Scan 10 times per second
+          qrbox: { width: 250, height: 250 }, // Scanning box size
+        };
 
         await scanner.start(
           { facingMode: "environment" }, // Prefer back camera on mobile
-          {
-            fps: 10, // Scan 10 times per second
-            qrbox: { width: 250, height: 250 }, // Scanning box size
-          },
+          config,
           (decodedText) => {
             // QR code successfully decoded
-            handleQRCodeDetected(decodedText);
+            if (isMounted) {
+              handleQRCodeDetected(decodedText);
+            }
           },
           () => {
             // Error callback - ignore scanning errors (too noisy)
           }
         );
+
+        if (isMounted) {
+          setIsScanning(true);
+        }
       } catch (err) {
         console.error("Error starting scanner:", err);
-        setError(
-          "Não foi possível acessar a câmera. Verifique as permissões."
-        );
-        setIsScanning(false);
+        if (isMounted) {
+          setError(
+            "Não foi possível acessar a câmera. Verifique as permissões."
+          );
+          setIsScanning(false);
+        }
       }
     };
 
-    startScanner();
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      startScanner();
+    }, 100);
 
     return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+
       // Cleanup scanner on unmount
       if (scannerRef.current) {
         scannerRef.current
           .stop()
           .then(() => {
             scannerRef.current?.clear();
+            scannerRef.current = null;
           })
           .catch((err) => {
             console.error("Error stopping scanner:", err);
